@@ -1,5 +1,5 @@
 /*
- * This file is part of the SDWebImage package.
+ * This file is part of the TMSDWebImage package.
  * (c) Olivier Poitrey <rs@dailymotion.com>
  *
  * For the full copyright and license information, please view the LICENSE
@@ -8,8 +8,8 @@
 
 @import Foundation;
 @import XCTest;
-#import <SDWebImage/SDWebImage.h>
-#import <SDWebImageWebPCoder/SDWebImageWebPCoder.h>
+#import <TMSDWebImage/TMSDWebImage.h>
+#import <TMSDWebImageWebPCoder/TMSDWebImageWebPCoder.h>
 #import <Expecta/Expecta.h>
 #import <objc/runtime.h>
 #if __has_include("webp/decode.h") && __has_include("webp/encode.h") && __has_include("webp/demux.h") && __has_include("webp/mux.h")
@@ -28,43 +28,43 @@
 
 const int64_t kAsyncTestTimeout = 5;
 
-@interface SDWebImageWebPCoderTests : XCTestCase
+@interface TMSDWebImageWebPCoderTests : XCTestCase
 @end
 
-@interface SDWebImageWebPCoderTests (Helpers)
-- (void)verifyCoder:(id<SDImageCoder>)coder
+@interface TMSDWebImageWebPCoderTests (Helpers)
+- (void)verifyCoder:(id<TMSDImageCoder>)coder
   withLocalImageURL:(NSURL *)imageUrl
    supportsEncoding:(BOOL)supportsEncoding
     isAnimatedImage:(BOOL)isAnimated;
 @end
 
-@interface SDWebPCoderFrame : NSObject
+@interface TMSDWebPCoderFrame : NSObject
 @property (nonatomic, assign) NSUInteger index; // Frame index (zero based)
 @property (nonatomic, assign) NSUInteger blendFromIndex; // The nearest previous frame index which blend mode is WEBP_MUX_BLEND
 @end
 
-@interface SDImageWebPCoder ()
+@interface TMSDImageWebPCoder ()
 - (void) updateWebPOptionsToConfig:(WebPConfig * _Nonnull)config
                        maxFileSize:(NSUInteger)maxFileSize
-                           options:(nullable SDImageCoderOptions *)options;
+                           options:(nullable TMSDImageCoderOptions *)options;
 @end
 
-@implementation SDWebImageWebPCoderTests
+@implementation TMSDWebImageWebPCoderTests
 
 + (void)setUp {
-    [SDImageCache.sharedImageCache clearMemory];
-    [SDImageCache.sharedImageCache clearDiskOnCompletion:nil];
-    [[SDImageCodersManager sharedManager] addCoder:[SDImageWebPCoder sharedCoder]];
+    [TMSDImageCache.sharedImageCache clearMemory];
+    [TMSDImageCache.sharedImageCache clearDiskOnCompletion:nil];
+    [[TMSDImageCodersManager sharedManager] addCoder:[TMSDImageWebPCoder sharedCoder]];
 }
 
 + (void)tearDown {
-    [[SDImageCodersManager sharedManager] removeCoder:[SDImageWebPCoder sharedCoder]];
+    [[TMSDImageCodersManager sharedManager] removeCoder:[TMSDImageWebPCoder sharedCoder]];
 }
 
 - (void)test01ThatWEBPWorks {
     XCTestExpectation *expectation = [self expectationWithDescription:@"WEBP"];
     NSURL *imageURL = [NSURL URLWithString:@"https://www.gstatic.com/webp/gallery3/1_webp_ll.png"];
-    [[SDWebImageDownloader sharedDownloader] downloadImageWithURL:imageURL options:0 progress:nil completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, BOOL finished) {
+    [[TMSDWebImageDownloader sharedDownloader] downloadImageWithURL:imageURL options:0 progress:nil completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, BOOL finished) {
         if (image && data && !error && finished) {
             [expectation fulfill];
         } else {
@@ -77,7 +77,7 @@ const int64_t kAsyncTestTimeout = 5;
 - (void)test02ThatProgressiveWebPWorks {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Progressive WebP download"];
     NSURL *imageURL = [NSURL URLWithString:@"https://www.gstatic.com/webp/gallery3/3_webp_ll.png"];
-    [[SDWebImageDownloader sharedDownloader] downloadImageWithURL:imageURL options:SDWebImageDownloaderProgressiveLoad progress:nil completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, BOOL finished) {
+    [[TMSDWebImageDownloader sharedDownloader] downloadImageWithURL:imageURL options:TMSDWebImageDownloaderProgressiveLoad progress:nil completed:^(UIImage * _Nullable image, NSData * _Nullable data, NSError * _Nullable error, BOOL finished) {
         if (image && data && !error && finished) {
             [expectation fulfill];
         } else if (finished) {
@@ -91,7 +91,7 @@ const int64_t kAsyncTestTimeout = 5;
 
 - (void)test11ThatStaticWebPCoderWorks {
     NSURL *staticWebPURL = [[NSBundle bundleForClass:[self class]] URLForResource:@"TestImageStatic" withExtension:@"webp"];
-    [self verifyCoder:[SDImageWebPCoder sharedCoder]
+    [self verifyCoder:[TMSDImageWebPCoder sharedCoder]
     withLocalImageURL:staticWebPURL
      supportsEncoding:YES
       isAnimatedImage:NO];
@@ -99,7 +99,7 @@ const int64_t kAsyncTestTimeout = 5;
 
 - (void)test12ThatAnimatedWebPCoderWorks {
     NSURL *animatedWebPURL = [[NSBundle bundleForClass:[self class]] URLForResource:@"TestImageAnimated" withExtension:@"webp"];
-    [self verifyCoder:[SDImageWebPCoder sharedCoder]
+    [self verifyCoder:[TMSDImageWebPCoder sharedCoder]
     withLocalImageURL:animatedWebPURL
      supportsEncoding:YES
       isAnimatedImage:YES];
@@ -107,41 +107,41 @@ const int64_t kAsyncTestTimeout = 5;
 
 - (void)test21UIImageWebPCategory {
     // Test invalid image data
-    UIImage *image = [UIImage sd_imageWithWebPData:nil];
+    UIImage *image = [UIImage tmsd_imageWithWebPData:nil];
     XCTAssertNil(image);
     // Test valid image data
     NSURL *staticWebPURL = [[NSBundle bundleForClass:[self class]] URLForResource:@"TestImageStatic" withExtension:@"webp"];
     NSData *data = [NSData dataWithContentsOfURL:staticWebPURL];
-    image = [UIImage sd_imageWithWebPData:data];
+    image = [UIImage tmsd_imageWithWebPData:data];
     XCTAssertNotNil(image);
 }
 
 - (void)test31AnimatedImageViewSetAnimatedImageWEBP {
-    SDAnimatedImageView *imageView = [SDAnimatedImageView new];
+    TMSDAnimatedImageView *imageView = [TMSDAnimatedImageView new];
     NSURL *animatedWebPURL = [[NSBundle bundleForClass:[self class]] URLForResource:@"TestImageAnimated" withExtension:@"webp"];
     NSData *animatedImageData = [NSData dataWithContentsOfURL:animatedWebPURL];
-    SDAnimatedImage *image = [SDAnimatedImage imageWithData:animatedImageData];
+    TMSDAnimatedImage *image = [TMSDAnimatedImage imageWithData:animatedImageData];
     imageView.image = image;
     XCTAssertNotNil(imageView.image);
 }
 
 - (void)test32AnimatedImageViewCategoryProgressive {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"test SDAnimatedImageView view category"];
-    SDAnimatedImageView *imageView = [SDAnimatedImageView new];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"test TMSDAnimatedImageView view category"];
+    TMSDAnimatedImageView *imageView = [TMSDAnimatedImageView new];
     NSURL *testURL = [NSURL URLWithString:@"http://littlesvr.ca/apng/images/SteamEngine.webp"];
-    [imageView sd_setImageWithURL:testURL placeholderImage:nil options:SDWebImageProgressiveLoad progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
+    [imageView tmsd_setImageWithURL:testURL placeholderImage:nil options:TMSDWebImageProgressiveLoad progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL * _Nullable targetURL) {
         dispatch_async(dispatch_get_main_queue(), ^{
             UIImage *image = imageView.image;
             // Progressive image may be nil when download data is not enough
             if (image) {
-                XCTAssertTrue(image.sd_isIncremental);
-                XCTAssertTrue([image conformsToProtocol:@protocol(SDAnimatedImage)]);
+                XCTAssertTrue(image.tmsd_isIncremental);
+                XCTAssertTrue([image conformsToProtocol:@protocol(TMSDAnimatedImage)]);
             }
         });
-    } completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
+    } completed:^(UIImage * _Nullable image, NSError * _Nullable error, TMSDImageCacheType cacheType, NSURL * _Nullable imageURL) {
         XCTAssertNil(error);
         XCTAssertNotNil(image);
-        XCTAssertTrue([image isKindOfClass:[SDAnimatedImage class]]);
+        XCTAssertTrue([image isKindOfClass:[TMSDAnimatedImage class]]);
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:kAsyncTestTimeout handler:nil];
@@ -151,7 +151,7 @@ const int64_t kAsyncTestTimeout = 5;
     // Test the optimization for blend and disposal method works without problem
     NSURL *animatedWebPURL = [[NSBundle bundleForClass:[self class]] URLForResource:@"TestImageBlendAnimated" withExtension:@"webp"];
     NSData *data = [NSData dataWithContentsOfURL:animatedWebPURL];
-    SDImageWebPCoder *coder = [[SDImageWebPCoder alloc] initWithAnimatedImageData:data options:nil];
+    TMSDImageWebPCoder *coder = [[TMSDImageWebPCoder alloc] initWithAnimatedImageData:data options:nil];
     XCTAssertNotNil(coder);
     /**
      This WebP image frames info is below:
@@ -173,9 +173,9 @@ const int64_t kAsyncTestTimeout = 5;
      11:   400   400    no        0        0       70       none    no       5270    lossless
      12:   320   382   yes        0        6       70       none   yes       2506    lossless
     */
-    NSArray<SDWebPCoderFrame *> *frames = [coder valueForKey:@"_frames"];
+    NSArray<TMSDWebPCoderFrame *> *frames = [coder valueForKey:@"_frames"];
     XCTAssertEqual(frames.count, 12);
-    for (SDWebPCoderFrame *frame in frames) {
+    for (TMSDWebPCoderFrame *frame in frames) {
         switch (frame.index) {
             // frame: 11 blend == no, means clear the canvas
             case 10:
@@ -192,7 +192,7 @@ const int64_t kAsyncTestTimeout = 5;
 - (void)test34StaticImageNotCreateCGContext {
     NSURL *staticWebPURL = [[NSBundle bundleForClass:[self class]] URLForResource:@"TestImageStatic" withExtension:@"webp"];
     NSData *data = [NSData dataWithContentsOfURL:staticWebPURL];
-    SDImageWebPCoder *coder = [[SDImageWebPCoder alloc] initWithAnimatedImageData:data options:nil];
+    TMSDImageWebPCoder *coder = [[TMSDImageWebPCoder alloc] initWithAnimatedImageData:data options:nil];
     XCTAssertTrue(coder.animatedImageFrameCount == 1);
     UIImage *image = [coder animatedImageFrameAtIndex:0];
     XCTAssertNotNil(image);
@@ -204,11 +204,11 @@ const int64_t kAsyncTestTimeout = 5;
 - (void)test45WebPEncodingMaxFileSize {
     NSURL *staticWebPURL = [[NSBundle bundleForClass:[self class]] URLForResource:@"TestImageStatic" withExtension:@"webp"];
     NSData *data = [NSData dataWithContentsOfURL:staticWebPURL];
-    UIImage *image = [UIImage sd_imageWithWebPData:data];
-    NSData *dataWithNoLimit = [SDImageWebPCoder.sharedCoder encodedDataWithImage:image format:SDImageFormatWebP options:nil];
+    UIImage *image = [UIImage tmsd_imageWithWebPData:data];
+    NSData *dataWithNoLimit = [TMSDImageWebPCoder.sharedCoder encodedDataWithImage:image format:TMSDImageFormatWebP options:nil];
     XCTAssertNotNil(dataWithNoLimit);
     NSUInteger maxFileSize = 8192;
-    NSData *dataWithLimit = [SDImageWebPCoder.sharedCoder encodedDataWithImage:image format:SDImageFormatWebP options:@{SDImageCoderEncodeMaxFileSize : @(maxFileSize)}];
+    NSData *dataWithLimit = [TMSDImageWebPCoder.sharedCoder encodedDataWithImage:image format:TMSDImageFormatWebP options:@{TMSDImageCoderEncodeMaxFileSize : @(maxFileSize)}];
     XCTAssertNotNil(dataWithLimit);
     XCTAssertGreaterThan(dataWithNoLimit.length, dataWithLimit.length);
     XCTAssertGreaterThan(dataWithNoLimit.length, maxFileSize);
@@ -219,27 +219,27 @@ const int64_t kAsyncTestTimeout = 5;
     WebPConfig config;
     WebPConfigPreset(&config, WEBP_PRESET_DEFAULT, 0.2);
 
-    SDImageCoderOptions *options = @{ SDImageCoderEncodeWebPMethod: @0,
-                                      SDImageCoderEncodeWebPPass: @2,
-                                      SDImageCoderEncodeWebPPreprocessing: @3,
-                                      SDImageCoderEncodeWebPThreadLevel: @4,
-                                      SDImageCoderEncodeWebPLowMemory: @5,
-                                      SDImageCoderEncodeWebPTargetPSNR: @6,
-                                      SDImageCoderEncodeWebPSegments: @7,
-                                      SDImageCoderEncodeWebPSnsStrength: @8,
-                                      SDImageCoderEncodeWebPFilterStrength: @9,
-                                      SDImageCoderEncodeWebPFilterSharpness: @10,
-                                      SDImageCoderEncodeWebPFilterType: @11,
-                                      SDImageCoderEncodeWebPAutofilter: @12,
-                                      SDImageCoderEncodeWebPAlphaCompression: @13,
-                                      SDImageCoderEncodeWebPAlphaFiltering: @14,
-                                      SDImageCoderEncodeWebPAlphaQuality: @15,
-                                      SDImageCoderEncodeWebPShowCompressed: @16,
-                                      SDImageCoderEncodeWebPPartitions: @17,
-                                      SDImageCoderEncodeWebPPartitionLimit: @18,
-                                      SDImageCoderEncodeWebPUseSharpYuv: @19 };
+    TMSDImageCoderOptions *options = @{ TMSDImageCoderEncodeWebPMethod: @0,
+                                      TMSDImageCoderEncodeWebPPass: @2,
+                                      TMSDImageCoderEncodeWebPPreprocessing: @3,
+                                      TMSDImageCoderEncodeWebPThreadLevel: @4,
+                                      TMSDImageCoderEncodeWebPLowMemory: @5,
+                                      TMSDImageCoderEncodeWebPTargetPSNR: @6,
+                                      TMSDImageCoderEncodeWebPSegments: @7,
+                                      TMSDImageCoderEncodeWebPSnsStrength: @8,
+                                      TMSDImageCoderEncodeWebPFilterStrength: @9,
+                                      TMSDImageCoderEncodeWebPFilterSharpness: @10,
+                                      TMSDImageCoderEncodeWebPFilterType: @11,
+                                      TMSDImageCoderEncodeWebPAutofilter: @12,
+                                      TMSDImageCoderEncodeWebPAlphaCompression: @13,
+                                      TMSDImageCoderEncodeWebPAlphaFiltering: @14,
+                                      TMSDImageCoderEncodeWebPAlphaQuality: @15,
+                                      TMSDImageCoderEncodeWebPShowCompressed: @16,
+                                      TMSDImageCoderEncodeWebPPartitions: @17,
+                                      TMSDImageCoderEncodeWebPPartitionLimit: @18,
+                                      TMSDImageCoderEncodeWebPUseSharpYuv: @19 };
 
-    [SDImageWebPCoder.sharedCoder updateWebPOptionsToConfig:&config maxFileSize:1200 options:options];
+    [TMSDImageWebPCoder.sharedCoder updateWebPOptionsToConfig:&config maxFileSize:1200 options:options];
 
     expect(config.method).to.equal(0);
     expect(config.pass).to.equal(2);
@@ -267,12 +267,12 @@ const int64_t kAsyncTestTimeout = 5;
     WebPConfig config;
     WebPConfigPreset(&config, WEBP_PRESET_DEFAULT, 0.2);
 
-    SDImageCoderOptions *options = @{
-        SDImageCoderEncodeWebPThreadLevel: @4,
-        SDImageCoderEncodeWebPTargetPSNR: @6.9
+    TMSDImageCoderOptions *options = @{
+        TMSDImageCoderEncodeWebPThreadLevel: @4,
+        TMSDImageCoderEncodeWebPTargetPSNR: @6.9
     };
 
-    [SDImageWebPCoder.sharedCoder updateWebPOptionsToConfig:&config maxFileSize:1200 options:options];
+    [TMSDImageWebPCoder.sharedCoder updateWebPOptionsToConfig:&config maxFileSize:1200 options:options];
 
     expect(config.method).to.equal(4);
     expect(config.target_PSNR).to.equal(6.9);
@@ -283,11 +283,11 @@ const int64_t kAsyncTestTimeout = 5;
     WebPConfig config;
     WebPConfigPreset(&config, WEBP_PRESET_DEFAULT, 0.2);
 
-    SDImageCoderOptions *options = @{
-        SDImageCoderEncodeWebPMethod: @"Foo"
+    TMSDImageCoderOptions *options = @{
+        TMSDImageCoderEncodeWebPMethod: @"Foo"
     };
 
-    [SDImageWebPCoder.sharedCoder updateWebPOptionsToConfig:&config maxFileSize:1200 options:options];
+    [TMSDImageWebPCoder.sharedCoder updateWebPOptionsToConfig:&config maxFileSize:1200 options:options];
 
     expect(config.method).to.equal(4);
 }
@@ -299,18 +299,18 @@ const int64_t kAsyncTestTimeout = 5;
     UIImage *grayscaleImage = [[UIImage alloc] initWithData:grayscaleImageData];
     expect(grayscaleImage).notTo.beNil();
     
-    NSData *webpData = [SDImageWebPCoder.sharedCoder encodedDataWithImage:grayscaleImage format:SDImageFormatWebP options:nil];
+    NSData *webpData = [TMSDImageWebPCoder.sharedCoder encodedDataWithImage:grayscaleImage format:TMSDImageFormatWebP options:nil];
     expect(webpData).notTo.beNil();
     
-    UIImage *decodedImage = [UIImage sd_imageWithData:webpData];
+    UIImage *decodedImage = [UIImage tmsd_imageWithData:webpData];
     expect(decodedImage).notTo.beNil();
     
     // Sample to verify that encoded WebP image's color is correct.
     // The wrong case before bugfix is that each column color will repeats 3 times.
     CGPoint point1 = CGPointMake(271, 764);
     CGPoint point2 = CGPointMake(round(point1.x + decodedImage.size.width / 3), point1.y);
-    UIColor *color1 = [decodedImage sd_colorAtPoint:point1];
-    UIColor *color2 = [decodedImage sd_colorAtPoint:point2];
+    UIColor *color1 = [decodedImage tmsd_colorAtPoint:point1];
+    UIColor *color2 = [decodedImage tmsd_colorAtPoint:point2];
     CGFloat r1, r2;
     CGFloat g1, g2;
     CGFloat b1, b2;
@@ -323,18 +323,18 @@ const int64_t kAsyncTestTimeout = 5;
 
 @end
 
-@implementation SDWebImageWebPCoderTests (Helpers)
+@implementation TMSDWebImageWebPCoderTests (Helpers)
 
-- (void)verifyCoder:(id<SDImageCoder>)coder
+- (void)verifyCoder:(id<TMSDImageCoder>)coder
   withLocalImageURL:(NSURL *)imageUrl
    supportsEncoding:(BOOL)supportsEncoding
     isAnimatedImage:(BOOL)isAnimated {
-    SDImageFormat encodingFormat = SDImageFormatWebP;
+    TMSDImageFormat encodingFormat = TMSDImageFormatWebP;
     
     NSData *inputImageData = [NSData dataWithContentsOfURL:imageUrl];
     expect(inputImageData).toNot.beNil();
-    SDImageFormat inputImageFormat = [NSData sd_imageFormatForImageData:inputImageData];
-    expect(inputImageFormat).toNot.equal(SDImageFormatUndefined);
+    TMSDImageFormat inputImageFormat = [NSData tmsd_imageFormatForImageData:inputImageData];
+    expect(inputImageFormat).toNot.equal(TMSDImageFormatUndefined);
     
     // 1 - check if we can decode - should be true
     expect([coder canDecodeFromData:inputImageData]).to.beTruthy();
@@ -345,10 +345,10 @@ const int64_t kAsyncTestTimeout = 5;
     
     if (isAnimated) {
         // 2a - check images count > 0 (only for animated images)
-        expect(inputImage.sd_isAnimated).to.beTruthy();
+        expect(inputImage.tmsd_isAnimated).to.beTruthy();
         
         // 2b - check image size and scale for each frameImage (only for animated images)
-#if SD_UIKIT
+#if TMSD_UIKIT
         CGSize imageSize = inputImage.size;
         CGFloat imageScale = inputImage.scale;
         [inputImage.images enumerateObjectsUsingBlock:^(UIImage * frameImage, NSUInteger idx, BOOL * stop) {
@@ -367,15 +367,15 @@ const int64_t kAsyncTestTimeout = 5;
     CGFloat thumbnailWidth = 50;
     CGFloat thumbnailHeight = 50;
     UIImage *thumbImage = [coder decodedImageWithData:inputImageData options:@{
-        SDImageCoderDecodeThumbnailPixelSize : @(CGSizeMake(thumbnailWidth, thumbnailHeight)),
-        SDImageCoderDecodePreserveAspectRatio : @(NO)
+        TMSDImageCoderDecodeThumbnailPixelSize : @(CGSizeMake(thumbnailWidth, thumbnailHeight)),
+        TMSDImageCoderDecodePreserveAspectRatio : @(NO)
     }];
     expect(thumbImage).toNot.beNil();
     expect(thumbImage.size).equal(CGSizeMake(thumbnailWidth, thumbnailHeight));
     // check thumnail with aspect ratio limit
     thumbImage = [coder decodedImageWithData:inputImageData options:@{
-        SDImageCoderDecodeThumbnailPixelSize : @(CGSizeMake(thumbnailWidth, thumbnailHeight)),
-        SDImageCoderDecodePreserveAspectRatio : @(YES)
+        TMSDImageCoderDecodeThumbnailPixelSize : @(CGSizeMake(thumbnailWidth, thumbnailHeight)),
+        TMSDImageCoderDecodePreserveAspectRatio : @(YES)
     }];
     expect(thumbImage).toNot.beNil();
     CGFloat ratio = pixelWidth / pixelHeight;
@@ -393,7 +393,7 @@ const int64_t kAsyncTestTimeout = 5;
     
     if (supportsEncoding) {
         // 4 - check if we can encode to the original format
-        if (encodingFormat == SDImageFormatUndefined) {
+        if (encodingFormat == TMSDImageFormatUndefined) {
             encodingFormat = inputImageFormat;
         }
         expect([coder canEncodeToFormat:encodingFormat]).to.beTruthy();
@@ -404,7 +404,7 @@ const int64_t kAsyncTestTimeout = 5;
         UIImage *outputImage = [coder decodedImageWithData:outputImageData options:nil];
         expect(outputImage.size).to.equal(inputImage.size);
         expect(outputImage.scale).to.equal(inputImage.scale);
-#if SD_UIKIT
+#if TMSD_UIKIT
         expect(outputImage.images.count).to.equal(inputImage.images.count);
 #endif
         
@@ -418,12 +418,12 @@ const int64_t kAsyncTestTimeout = 5;
         } else {
             maxPixelSize = CGSizeMake(round(maxHeight * ratio), maxHeight);
         }
-        NSData *outputMaxImageData = [coder encodedDataWithImage:inputImage format:encodingFormat options:@{SDImageCoderEncodeMaxPixelSize : @(CGSizeMake(maxWidth, maxHeight))}];
+        NSData *outputMaxImageData = [coder encodedDataWithImage:inputImage format:encodingFormat options:@{TMSDImageCoderEncodeMaxPixelSize : @(CGSizeMake(maxWidth, maxHeight))}];
         UIImage *outputMaxImage = [coder decodedImageWithData:outputMaxImageData options:nil];
         // Image/IO's thumbnail API does not always use round to preserve precision, we check ABS <= 1
         expect(ABS(outputMaxImage.size.width - maxPixelSize.width)).beLessThanOrEqualTo(1);
         expect(ABS(outputMaxImage.size.height - maxPixelSize.height)).beLessThanOrEqualTo(1);
-#if SD_UIKIT
+#if TMSD_UIKIT
         expect(outputMaxImage.images.count).to.equal(inputImage.images.count);
 #endif
     }

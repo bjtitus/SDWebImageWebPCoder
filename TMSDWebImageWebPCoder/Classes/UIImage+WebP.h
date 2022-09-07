@@ -1,18 +1,18 @@
 /*
- * This file is part of the SDWebImage package.
+ * This file is part of the TMSDWebImage package.
  * (c) Olivier Poitrey <rs@dailymotion.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
 
-#if __has_include(<SDWebImage/SDWebImage.h>)
-#import <SDWebImage/SDWebImage.h>
+#if __has_include(<TMSDWebImage/TMSDWebImage.h>)
+#import <TMSDWebImage/TMSDWebImage.h>
 #else
-@import SDWebImage;
+@import TMSDWebImage;
 #endif
 
-// This category is just use as a convenience method. For more detail control, use methods in `UIImage+MultiFormat.h` or directlly use `SDImageCoder`
+// This category is just use as a convenience method. For more detail control, use methods in `UIImage+MultiFormat.h` or directlly use `TMSDImageCoder`
 @interface UIImage (WebP)
 
 /**
@@ -22,6 +22,6 @@
  @param data The WebP data
  @return The created image
  */
-+ (nullable UIImage *)sd_imageWithWebPData:(nullable NSData *)data;
++ (nullable UIImage *)tmsd_imageWithWebPData:(nullable NSData *)data;
 
 @end

@@ -1,0 +1,6 @@
+framework module TMSDWebImageWebPCoder {
+  umbrella header "TMSDWebImageWebPCoder.h"
+
+  export *
+  module * { export * }
+}
